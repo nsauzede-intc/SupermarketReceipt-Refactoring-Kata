@@ -1,9 +1,19 @@
 from model_objects import ProductUnit
 
+class TextFormatter:
+    def format_line_with_whitespace(self, whitespace_size, value):
+        line = ""
+        for i in range(whitespace_size):
+            line += " "
+        line += value
+        line += "\n"
+        return line
+
 class ReceiptPrinter:
 
-    def __init__(self, columns=40):
+    def __init__(self, columns=40, formatter=TextFormatter()):
         self.columns = columns
+        self.formatter = formatter
   
     def print_receipt(self, receipt):
         result = ""
@@ -30,10 +40,7 @@ class ReceiptPrinter:
     def format_line_with_whitespace(self, name, value):
         line = name
         whitespace_size = self.columns - len(name) - len(value)
-        for i in range(whitespace_size):
-            line += " "
-        line += value
-        line += "\n"
+        line += self.formatter.format_line_with_whitespace(whitespace_size, value)
         return line
 
     def print_price(self, price):
