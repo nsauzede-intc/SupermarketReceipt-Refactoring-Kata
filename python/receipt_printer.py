@@ -19,15 +19,54 @@ class TextFormatter:
         return "\n"
     def format_whitespace(self):
         return " "
+    def header(self):
+        return ""
+    def footer(self):
+        return ""
+    def row_header(self):
+        return ""
+    def row_footer(self):
+        return ""
+
+class HTMLFormatter:
+    def format_line_with_whitespace(self, whitespace_size, value):
+        line = '</td><td align="right">'
+        line += value
+        line += self.format_newline()
+        return line
+    def format_multi_item_pricing(self, price, quantity):
+        whitespace = self.format_whitespace()
+        return f"{whitespace * 2}{price}{whitespace}*{whitespace}{quantity}{self.format_newline()}"
+    def format_total_header(self):
+        return f"Total:{self.format_whitespace()}"
+    def format_discount(self, description, name):
+        return f"{description}{self.format_whitespace()}({name})"
+    def format_newline(self):
+        return ""
+    def format_whitespace(self):
+        return " "
+    def header(self):
+        #return '<table border="1"><th>h1</th><th>h2</th>\n'
+        return '<table>\n'
+    def footer(self):
+        return "</table>\n"
+    def row_header(self):
+        return "<tr><td>"
+    def row_footer(self):
+        return "</td></tr>\n"
 
 class ReceiptPrinter:
 
     def __init__(self, columns=40, formatter=TextFormatter()):
         self.columns = columns
         self.formatter = formatter
+        import os
+        if "HTML" in os.environ:
+            self.formatter = HTMLFormatter()
   
     def print_receipt(self, receipt):
         result = ""
+        result += self.formatter.header()
         for item in receipt.items:
             receipt_item = self.print_receipt_item(item)
             result += receipt_item
@@ -38,6 +77,7 @@ class ReceiptPrinter:
 
         result += self.formatter.format_newline()
         result += self.present_total(receipt)
+        result += self.formatter.footer()
         return str(result)
 
     def print_receipt_item(self, item):
@@ -49,10 +89,10 @@ class ReceiptPrinter:
         return line
 
     def format_line_with_whitespace(self, name, value):
-        line = name
+        line = self.formatter.row_header() + name
         whitespace_size = self.columns - len(name) - len(value)
         line += self.formatter.format_line_with_whitespace(whitespace_size, value)
-        return line
+        return line + self.formatter.row_footer()
 
     def print_price(self, price):
         return "%.2f" % price
