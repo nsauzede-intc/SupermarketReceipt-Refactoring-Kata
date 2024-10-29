@@ -4,10 +4,21 @@ class TextFormatter:
     def format_line_with_whitespace(self, whitespace_size, value):
         line = ""
         for i in range(whitespace_size):
-            line += " "
+            line += self.format_whitespace()
         line += value
-        line += "\n"
+        line += self.format_newline()
         return line
+    def format_multi_item_pricing(self, price, quantity):
+        whitespace = self.format_whitespace()
+        return f"{whitespace * 2}{price}{whitespace}*{whitespace}{quantity}{self.format_newline()}"
+    def format_total_header(self):
+        return f"Total:{self.format_whitespace()}"
+    def format_discount(self, description, name):
+        return f"{description}{self.format_whitespace()}({name})"
+    def format_newline(self):
+        return "\n"
+    def format_whitespace(self):
+        return " "
 
 class ReceiptPrinter:
 
@@ -25,7 +36,7 @@ class ReceiptPrinter:
             discount_presentation = self.print_discount(discount)
             result += discount_presentation
 
-        result += "\n"
+        result += self.formatter.format_newline()
         result += self.present_total(receipt)
         return str(result)
 
@@ -34,7 +45,7 @@ class ReceiptPrinter:
         name = item.product.name
         line = self.format_line_with_whitespace(name, total_price_printed)
         if item.quantity != 1:
-            line += f"  {self.print_price(item.price)} * {self.print_quantity(item)}\n"
+            line += self.formatter.format_multi_item_pricing(self.print_price(item.price), self.print_quantity(item))
         return line
 
     def format_line_with_whitespace(self, name, value):
@@ -53,11 +64,11 @@ class ReceiptPrinter:
             return '%.3f' % item.quantity
 
     def print_discount(self, discount):
-        name = f"{discount.description} ({discount.product.name})"
+        name = self.formatter.format_discount(discount.description, discount.product.name)
         value = self.print_price(discount.discount_amount)
         return self.format_line_with_whitespace(name, value)
 
     def present_total(self, receipt):
-        name = "Total: "
+        name = self.formatter.format_total_header()
         value = self.print_price(receipt.total_price())
         return self.format_line_with_whitespace(name, value)
